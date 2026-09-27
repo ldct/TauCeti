@@ -26,7 +26,8 @@ open MulAction
 variable {n : ℕ} (t : PermutationTriple n)
 
 /-- The monodromy action is pretransitive and has only trivial blocks of sheets.
-This uses Mathlib's `IsPreprimitive`, which also holds for an empty set of sheets. -/
+Following BelyiMaps Layer 1.4, `IsPrimitive` names Mathlib's `IsPreprimitive` predicate,
+including its vacuous degree-zero case. -/
 def IsPrimitive : Prop := IsPreprimitive t.monodromyGroup (Fin n)
 
 /-- Primitivity of a triple is preprimitivity of its monodromy action. -/
