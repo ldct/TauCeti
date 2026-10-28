@@ -6,11 +6,16 @@ Authors: The Tau Ceti contributors
 module
 
 public import Mathlib.Algebra.DirectSum.Module
+public import Mathlib.LinearAlgebra.Isomorphisms
 public import Mathlib.LinearAlgebra.Projection
 public import TauCeti.Order.SupIndep
 
 /-!
 # Projections onto the summands of an internal direct sum
+
+Also construct `LinearMap.projectedEquiv`: a linear map restricted to a complement of its
+kernel, followed by projection along a complement of its range, is an isomorphism. The
+target of the projection may differ from the range of the original map.
 
 Mathlib's `Submodule.projectionOnto` projects a module onto one of two complementary submodules.
 A family `Q` of submodules that is `iSupIndep` and spans the whole module presents each `Q i` as
@@ -150,3 +155,28 @@ theorem coe_ofBijective_coeLinearMap_symm_apply_eq_internalProjection
         congrArg₂ (fun a b ↦ a + b) hx hy
 
 end DirectSum.IsInternal
+
+namespace LinearMap
+
+variable {R V W : Type*} [Ring R] [AddCommGroup V] [AddCommGroup W]
+  [Module R V] [Module R W]
+
+/-- Restrict a linear map to a complement `D` of its kernel, then project onto `E` along
+`Q`, where both `E` and the range complement `Q`. This is an isomorphism even when
+the original map does not send `D` into `E`. -/
+noncomputable def projectedEquiv (f : V →ₗ[R] W) (D : Submodule R V)
+    (Q E : Submodule R W) (hD : IsCompl (ker f) D) (hQ : IsCompl (range f) Q)
+    (hE : IsCompl E Q) : D ≃ₗ[R] E :=
+  (((ker f).quotientEquivOfIsCompl D hD).symm.trans f.quotKerEquivRange).trans
+    (((Q.quotientEquivOfIsCompl (range f) hQ.symm).symm).trans
+      (Q.quotientEquivOfIsCompl E hE.symm))
+
+/-- The isomorphism `projectedEquiv` is the actual composite of restriction and projection. -/
+@[simp]
+theorem projectedEquiv_apply (f : V →ₗ[R] W) (D : Submodule R V)
+    (Q E : Submodule R W) (hD : IsCompl (ker f) D) (hQ : IsCompl (range f) Q)
+    (hE : IsCompl E Q) (x : D) :
+    f.projectedEquiv D Q E hD hQ hE x = E.projectionOnto Q hE (f x) := by
+  simp [projectedEquiv]
+
+end LinearMap
